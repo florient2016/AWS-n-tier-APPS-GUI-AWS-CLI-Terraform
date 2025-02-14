@@ -102,13 +102,14 @@ Before you begin, ensure you have:
 
 
 # 2. Deploying Using AWS CLI
-This section provides a step-by-step guide to deploying an Amazon Linux instance using AWS CLI, including: ✅ VPC creation
-✅ - **Public & Private Subnets**
-✅ - **Routing & Internet Gateway**
-✅ - **Security Groups with proper rules**
-✅ - **Key Pair generation**
-✅ - **Launching a public instance (for web/app) and a private instance (for database)**
-✅ - **Testing SSH & PostgreSQL connectivity**
+This section provides a step-by-step guide to deploying an Amazon Linux instance using AWS CLI, including: 
+- **✅ VPC creation
+- **✅ Public & Private Subnets**
+- **✅ Routing & Internet Gateway**
+- **✅ Security Groups with proper rules**
+- **✅ Key Pair generation**
+- **✅ Launching a public instance (for web/app) and a private instance (for database)**
+- **✅ Testing SSH & PostgreSQL connectivity**
 
 ## 🛠️ Step 1: Create a VPC
 A VPC (Virtual Private Cloud) is required to isolate network resources.
