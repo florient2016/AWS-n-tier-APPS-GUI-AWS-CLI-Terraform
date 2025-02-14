@@ -103,7 +103,7 @@ Before you begin, ensure you have:
 
 # 2. Deploying Using AWS CLI
 This section provides a step-by-step guide to deploying an Amazon Linux instance using AWS CLI, including: 
-- **✅ VPC creation
+- **✅ VPC creation**
 - **✅ Public & Private Subnets**
 - **✅ Routing & Internet Gateway**
 - **✅ Security Groups with proper rules**
