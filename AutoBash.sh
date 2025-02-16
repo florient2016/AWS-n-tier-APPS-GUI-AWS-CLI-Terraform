@@ -1,5 +1,6 @@
 #!/bin/bash
 sudo yum install -y vim git bash-completion wget tmux yum-utils device-mapper-persistent-data lvm2 go python3-pip sshpass
+sudo useradd -m -d /home/ansible ansible -G wheel
 sudo echo 'ansible  ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/ansible
 sudo chown ansible:ansible /etc/sudoers.d/ansible
 sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/gI' /etc/ssh/sshd_config
