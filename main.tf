@@ -117,17 +117,9 @@ resource "aws_security_group" "db_sg" {
   vpc_id      = aws_vpc.my_vpc.id
 
   ingress {
-    description = "Allow SSH from Public Instance"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    security_groups = [aws_security_group.ssh_sg.id]
-  }
-
-  ingress {
-    description = "Allow mariadb from Public Instance"
-    from_port   = 3306
-    to_port     = 3306
+    description = "Allow all traffic from Public Instance"
+    from_port   = 0
+    to_port     =  0
     protocol    = "tcp"
     security_groups = [aws_security_group.ssh_sg.id]
   }
@@ -188,12 +180,17 @@ resource "aws_instance" "private_instance" {
 # ----------------------------
 # Outputs
 # ----------------------------
-output "public_instance_ip" {
+output "Connect_WebServer_instance_ip" {
   description = "The Public IP of the Web Instance"
   value       = "ssh ec2-user@${aws_instance.public_instance.public_ip}"
 }
 
-output "private_instance_ip" {
+output "WebServer_Privite_instance_ip" {
+  description = "The Private IP of the Database Instance"
+  value       = aws_instance.public_instance.private_ip
+}
+
+output "BDD_Privite_instance_ip" {
   description = "The Private IP of the Database Instance"
   value       = aws_instance.private_instance.private_ip
 }
