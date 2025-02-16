@@ -1,0 +1,96 @@
+---
+- name: Deploy Portfolio Website and Database
+  hosts: all
+  become: yes
+  tasks:
+  
+  - name: Update and Install Packages (Web Server)
+    yum:
+      update_cache: yes
+      name: 
+        - httpd
+        - php-fpm
+        - php-mysql
+        - mariadb-client
+      state: present
+    when: "'webserver' in group_names"
+
+  - name: Start and Enable httpd Service
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: "'webserver' in group_names"
+
+  - name: Deploy Portfolio PHP Website
+    template:
+      src: index.php.j2
+      dest: /var/www/html/index.php
+      mode: '0644'
+    when: "'webserver' in group_names"
+
+
+  - name: disable firewall service
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+    when: "'webserver' in group_names"
+
+
+  - name: Install MariaDB Server (Database)
+    apt:
+      name: 
+        - mariadb-server
+      state: present
+    when: "'bdd' in group_names"
+
+  - name: Start and Enable MariaDB
+    service:
+      name: mariadb
+      state: started
+      enabled: yes
+    when: "'bdd' in group_names"
+
+  - name: Create Database
+    mysql_db:
+      name: portfolio_db
+      state: present
+    when: "'bdd' in group_names"
+
+  - name: Create Database User
+    mysql_user:
+      name: portfolio_user
+      password: securepassword
+      priv: "portfolio_db.*:ALL"
+      host: "10.10.0.10"
+      state: present
+    when: "'bdd' in group_names"
+
+  - name: Copy SQL File
+    copy:
+      dest: /tmp/setup.sql
+      content: |
+        CREATE TABLE IF NOT EXISTS projects (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          title VARCHAR(255) NOT NULL,
+          description TEXT NOT NULL,
+          image VARCHAR(255) NOT NULL
+        );
+  
+        INSERT INTO projects (title, description, image) VALUES
+        ('Project 1', 'This is my first project.', 'https://via.placeholder.com/100'),
+        ('Project 2', 'This is my second project.', 'https://via.placeholder.com/100');
+    when: "'bdd' in group_names"
+
+  - name: Create Portfolio Projects Table
+    mysql_db:
+      login_user: portfolio_user
+      login_password: securepassword
+      login_host: 10.10.2.10
+      name: portfolio_db
+      state: import
+      target: /tmp/setup.sql
+    when: "'bdd' in group_names"
+  
+

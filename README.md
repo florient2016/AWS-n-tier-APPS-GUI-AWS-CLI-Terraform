@@ -251,7 +251,7 @@ resource "aws_vpc" "my_vpc" {
 }
 
 # ----------------------------
-# Subnets
+# Public Subnets
 # ----------------------------
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.my_vpc.id
@@ -264,6 +264,9 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
+# ----------------------------
+# Private Subnets
+# ----------------------------
 resource "aws_subnet" "private_subnet" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.2.0/24"
@@ -359,9 +362,9 @@ resource "aws_security_group" "db_sg" {
   }
 
   ingress {
-    description = "Allow PostgreSQL from Public Instance"
-    from_port   = 5432
-    to_port     = 5432
+    description = "Allow mariadb from Public Instance"
+    from_port   = 3306
+    to_port     = 3306
     protocol    = "tcp"
     security_groups = [aws_security_group.ssh_sg.id]
   }
@@ -380,10 +383,11 @@ resource "aws_security_group" "db_sg" {
 
 # ----------------------------
 # Key Pair
+# Use your actual public key path
 # ----------------------------
 resource "aws_key_pair" "my_key" {
   key_name   = "my-keypair"
-  public_key = file("~/.ssh/id_rsa.pub") # Use your actual public key path
+  public_key = file("~/.ssh/id_rsa.pub") 
 }
 
 # ----------------------------
@@ -391,7 +395,7 @@ resource "aws_key_pair" "my_key" {
 # ----------------------------
 # Public Instance
 resource "aws_instance" "public_instance" {
-  ami                    = "ami-0abcdef1234567890" # Replace with the latest Amazon Linux AMI
+  ami                    = "ami-053a45fff0a704a47" # Replace with the latest Amazon Linux AMI
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_key.key_name
   subnet_id              = aws_subnet.public_subnet.id
@@ -399,21 +403,23 @@ resource "aws_instance" "public_instance" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "public-instance"
+    Name = "WEB-Server"
   }
+  user_data = file("./AutoBash.sh")
 }
 
 # Private Instance
 resource "aws_instance" "private_instance" {
-  ami                    = "ami-0abcdef1234567890" # Replace with the latest Amazon Linux AMI
+  ami                    = "ami-053a45fff0a704a47" # Replace with the latest Amazon Linux AMI
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_key.key_name
   subnet_id              = aws_subnet.private_subnet.id
   vpc_security_group_ids = [aws_security_group.db_sg.id]
 
   tags = {
-    Name = "private-instance"
+    Name = "BDD-Server"
   }
+  user_data = file("./AutoBash.sh")
 }
 
 # ----------------------------
@@ -421,7 +427,7 @@ resource "aws_instance" "private_instance" {
 # ----------------------------
 output "public_instance_ip" {
   description = "The Public IP of the Web Instance"
-  value       = aws_instance.public_instance.public_ip
+  value       = "ssh ec2-user@${aws_instance.public_instance.public_ip}"
 }
 
 output "private_instance_ip" {
@@ -434,7 +440,7 @@ output "private_instance_ip" {
 ```bash
 terraform init
 terraform plan
-terraform apply -auto-approve
+terraform apply --auto-approve
 ```
 🎉 Now your cloud infrastructure is fully automated and production-ready! 🚀
 # 🎯 Conclusion
