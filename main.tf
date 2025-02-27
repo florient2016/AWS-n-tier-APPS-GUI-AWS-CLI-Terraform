@@ -13,8 +13,9 @@ resource "aws_vpc" "my_vpc" {
   }
 }
 
+
 # ----------------------------
-# Public Subnets
+# Public Subnets 1
 # ----------------------------
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.my_vpc.id
@@ -24,6 +25,21 @@ resource "aws_subnet" "public_subnet" {
 
   tags = {
     Name = "public-subnet"
+  }
+}
+
+
+# ----------------------------
+# Public Subnets 2
+# ----------------------------
+resource "aws_subnet" "public_subnet2" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.4.0/24"
+  availability_zone       = "us-east-1b"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-subnet2"
   }
 }
 
@@ -70,6 +86,11 @@ resource "aws_route" "public_route" {
 
 resource "aws_route_table_association" "public_association" {
   subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table_association" "public_association2" {
+  subnet_id      = aws_subnet.public_subnet2.id
   route_table_id = aws_route_table.public_rt.id
 }
 
@@ -150,7 +171,7 @@ resource "aws_key_pair" "my_key" {
 # ----------------------------
 # Public Instance
 resource "aws_instance" "public_instance" {
-  ami                    = "ami-053a45fff0a704a47" # Replace with the latest Amazon Linux AMI
+  ami                    = "ami-0c7af5fe939f2677f" # Replace with the latest Amazon Linux AMI
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_key.key_name
   subnet_id              = aws_subnet.public_subnet.id
@@ -163,9 +184,23 @@ resource "aws_instance" "public_instance" {
   user_data = file("./AutoBash.sh")
 }
 
+resource "aws_instance" "public_instance2" {
+  ami                    = "ami-0c7af5fe939f2677f" # Replace with the latest Amazon Linux AMI
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.my_key.key_name
+  subnet_id              = aws_subnet.public_subnet2.id
+  vpc_security_group_ids = [aws_security_group.ssh_sg.id]
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "WEB-Server2"
+  }
+  user_data = file("./AutoBash.sh")
+}
+
 # Private Instance
 resource "aws_instance" "private_instance" {
-  ami                    = "ami-053a45fff0a704a47" # Replace with the latest Amazon Linux AMI
+  ami                    = "ami-0c7af5fe939f2677f" # Replace with the latest Amazon Linux AMI
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.my_key.key_name
   subnet_id              = aws_subnet.private_subnet.id
@@ -185,8 +220,13 @@ output "Connect_WebServer_instance_ip" {
   value       = "ssh ec2-user@${aws_instance.public_instance.public_ip}"
 }
 
-output "WebServer_Privite_instance_ip" {
-  description = "The Private IP of the Database Instance"
+output "Connect_WebServer2_instance_ip" {
+  description = "The Public IP of the Web Instance"
+  value       = "ssh ec2-user@${aws_instance.public_instance2.public_ip}"
+}
+
+output "WebServer_Public_instance_ip" {
+  description = "The Public IP of the Database Instance"
   value       = aws_instance.public_instance.private_ip
 }
 
